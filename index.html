@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Q&A Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f2f2f2;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 8px;
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    h1 {
+      color: #007BFF;
+    }
+
+    .question {
+      margin: 20px 0;
+      padding: 20px;
+      border: 1px solid #ccc;
+      background-color: #f9f9f9;
+      border-radius: 5px;
+    }
+
+    .question p {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .choices {
+      text-align: center;
+      /* Center-align the choices */
+    }
+
+    .choices label {
+      display: block;
+      margin: 10px 0;
+      font-size: 30px;
+    }
+
+    #submit {
+      margin-top: 10px;
+      padding: 15px 30px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 20px;
+    }
+
+    #score {
+      margin-top: 20px;
+      font-size: 30px;
+    }
+
+    #timer {
+      font-size: 30px;
+      font-weight: bold;
+      color: #FF5733;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Q&A Game</h1>
+
+    <div class="question">
+      <p></p>
+      <div class="choices" id="choices"></div>
+      <button id="submit">Submit</button>
+    </div>
+
+    <div id="score">Score: 0</div>
+    <div id="timer">Time Left: 15</div>
+  </div>
+
+  <script>
+    let score = 0;
+    let timer = 15;
+    let intervalId;
+    let currentQuestionIndex;
+    let currentLevel = 0; // Start at level 0 (before level 1)
+    let questionsPerLevel = 10; // Change this to set the number of questions per level
+    let totalQuestionsAnswered = 0;
+
+    // Define your questions for each level here
+    const levels = [
+            [
+      {
+        question: "What is the smallest prime number? - Science",
+        choices: ["A. 1", "B. 3", "C. 2"],
+        answer: "C. 2"
+                },
+      {
+        question: "Which planet is known as the Red Planet? - Science",
+        choices: ["A. Mars", "B. Jupiter", "C. Mercury"],
+        answer: "A. Mars"
+                },
+      {
+        question: "What is the chemical symbol for gold? - Science",
+        choices: ["A. Au", "B. Ag", "C. Sn"],
+        answer: "A. Au"
+                },
+      {
+        question: "What is the chemical symbol for iron? - Science",
+        choices: ["A. Fe", "B. Ir", "C. F"],
+        answer: "A. Fe"
+                },
+      {
+        question: "Which gas makes up the majority of Earth's atmosphere? - Science",
+        choices: ["A. Oxygen", "B. Carbon Dioxide", "C. Nitrogen"],
+        answer: "C. Nitrogen"
+                },
+      {
+        question: "What is the largest mammal on Earth? - Science",
+        choices: ["A. Elephant", "B. Hippopotamus", "C. Blue Whale"],
+        answer: "C. Blue Whale"
+                },
+      {
+        question: "Which gas do plants absorb from the atmosphere during photosynthesis? - Science",
+        choices: ["A. Oxygen", "B. Carbon Dioxide", "C. Hydrogen"],
+        answer: "B. Carbon Dioxide"
+                },
+      {
+        question: "What is the largest organ in the human body? - Science",
+        choices: ["A. Skin", "B. Brain", "C. Heart"],
+        answer: "A. Skin"
+                },
+      {
+        question: "Which planet is known as the Morning Star or Evening Star? - Science",
+        choices: ["A. Venus", "B. Jupiter", "C. Saturn"],
+        answer: "A. Venus"
+                },
+      {
+        question: "What is the chemical symbol for water? - Science",
+        choices: ["A. Wa D", "B. H2O", "C. CO2"],
+        answer: "B. H2O"
+                }
+                // Add more questions for Level 1
+            ],
+            [
+      {
+        question: "What is 2+2? - Basic Math",
+        choices: ["A. 4", "B. 22", "C. 5"],
+        answer: "A. 4"
+                },
+      {
+        question: "What is 9x9? - Basic Math",
+        choices: ["A. 99", "B. 18", "C. 91"],
+        answer: "C. 91"
+                },
+      {
+        question: "If a rectangle has a length of 8 inches and a width of 3 inches, what is its perimeter? - Basic Math",
+        choices: ["A. 24 inches", "B. 5 inches", "C. 11 inches"],
+        answer: "A. 24 inches"
+                },
+      {
+        question: "What is square root of 25? - Basic Math",
+        choices: ["A. 3", "B. 5", "C. 2"],
+        answer: "B. 5"
+                },
+      {
+        question: "66x6 is 396, 4x44 is 176. What is 2-8? - Basic Math",
+        choices: ["A. -6", "B. 6", "C. 10"],
+        answer: "A. -6"
+                },
+      {
+        question: "What is 40 divided by 4? - Basic Math",
+        choices: ["A. 10", "B. 44", "C. 36"],
+        answer: "A. 10"
+                },
+      {
+        question: "If 15-30 equals -15, what is 10-20? - Basic Math",
+        choices: ["A. -10", "B. 30", "C. -30"],
+        answer: "A. -10"
+                },
+      {
+        question: "If you have 108 apples and you give 33 apples to your friend, 48 apples to your mom, how many apples do you have left?? - Basic Math",
+        choices: ["A. 28", "B. 36", "C. 27"],
+        answer: "C. 27"
+                },
+      {
+        question: "What is square root of 16? - Basic Math",
+        choices: ["A. 8", "B. 4", "C. 2"],
+        answer: "B. 4"
+                },
+      {
+        question: "Sara has 10 candies, and she wants to share them equally among her 2 friends. How many candies will each friend get?",
+        choices: ["A. 5", "B. 4", "C. 3"],
+        answer: "A. 5"
+                }
+
+                // Add more questions for Level 2
+            ],
+            [
+      {
+        question: "Sino ang kinikilalang bayani ng Pilipinas? - Philippine History",
+        choices: ["A. Lapu-Lapu", "B. Andres Bonifacio", "C. Jose Rizal"],
+        answer: "C. Jose Rizal"
+                },
+      {
+        question: "Sino ang pinuno ng Katipunan, isang rebolusyonaryong lipunan na nakipaglaban para sa kalayaan ng Pilipinas mula sa pamumuno ng mga Espanyol? - Philippine History",
+        choices: ["A. Andres Bonifacio", "B. Emilio Aguinaldo", "C. Marcelo H. del Pilar"],
+        answer: "A. Andres Bonifacio"
+                },
+      {
+        question: "Ano ang pangalan ng makasaysayang lugar sa Maynila kung saan ipinahayag ang kalayaan ng Pilipinas mula sa pamumuno ng mga Kastila noong Hunyo 12, 1898? - Philippine History",
+        choices: ["A. Luneta Park", "B. Bonifacio Shrine", "C. Intramuros"],
+        answer: "A. Luneta Park"
+                 },
+      {
+       question: "Sino ang unang babaeng naging Pangulo ng Pilipinas? - Philippine History",
+       choices: ["A. Corazon Aquino", " B. Miriam Defensor-Santiago", "C. Gloria Macapagal-Arroyo"],
+       answer: "A. Corazon Aquino"
+                },
+      {
+        question: "Noong panahon ng kolonyalismong Kastila, ano ang tawag sa mga piling uri at mga mandirigma sa Pilipinas? - Philippine History",
+        choices: ["A. Kilusang Katipunan", "B. Illustrado", "C. Maharlika"],
+        answer: "C. Maharlika"
+                },
+      {
+        question: "Sino ang pambansang bayaning Pilipino na kilala sa pamumuno ng paglaban laban sa pananakop ng mga Kastila sa rehiyon ng Visayas? - Philippine History",
+        choices: ["A. Lapu-Lapu", "B. Andres Bonifacio", "C. Juan Luna"],
+        answer: "A. Lapu-Lapu"
+                },
+      {
+        question: "Ano ang pangalang ginamit para sa mapayapang rebolusyon noong 1986 na nagdulot ng pagpapatalsik kay Pangulong Ferdinand Marcos? - Philippine History",
+        choices: ["A. EDSA Revolution", "B. People Power Revolution", "C. Kilusang Katipunan"],
+        answer: "A. EDSA Revolution"
+                 },
+      {
+        question: "Sino ang Amerikanong heneral na sinabing, I shall return, noong Ikalawang Digmaang Pandaigdig, na tumutukoy sa kanyang pangako na bumalik sa Pilipinas? - Philippine History",
+        choices: ["A. Heneral Dwight D. Eisenhower", "B. Heneral George S. Patton", "C. Heneral Douglas MacArthur"],
+        answer: "C. Heneral Douglas MacArthur"
+                },
+      {
+        question: "Ano ang pangalan ng presidente ng Pilipinas na nagsilbing lider noong Ikalawang Digmaang Pandaigdig at nakilala rin sa kanyang mga ambag sa United Nations? - Philippine History",
+        choices: ["A. Manuel L. Quezon", "B. Manuel Roxas", "C. Carlos P. Garcia"],
+        answer: "B. Manuel Roxas"
+                 },
+      {
+        question: "Anong pangyayari ang nagpahayag ng kasarinlan ng Pilipinas mula sa pananakop ng mga Kastila? - Philippine History",
+        choices: ["A. Sigaw ng Pugad Lawin", "B. Himagsikang Pilipino ng 1896", "C. Labanan sa Mactan"],
+        answer: "B. Himagsikang Pilipino ng 1896"
+   
+   
+      }]
+    // Add more levels with questions as needed
+    ];
+
+    function displayNextQuestion() {
+      if (totalQuestionsAnswered >= questionsPerLevel) {
+        currentLevel++;
+        totalQuestionsAnswered = 0;
+      }
+
+      if (currentLevel >= levels.length) {
+        alert("Congratulations! You've completed all levels!");
+        return;
+      }
+
+      currentQuestionIndex = totalQuestionsAnswered;
+      const currentQuestion = levels[currentLevel][currentQuestionIndex];
+
+      document.querySelector('.question p').textContent = currentQuestion.question;
+      document.querySelector('#score').textContent = `Score: ${score}`;
+      timer = 15;
+      document.querySelector('#timer').textContent = `Time Left: ${timer}`;
+
+      // Display choices without shuffling
+      const choicesContainer = document.getElementById('choices');
+      choicesContainer.innerHTML = '';
+      currentQuestion.choices.forEach((choice, index) => {
+        const radioButton = document.createElement('input');
+        radioButton.type = 'radio';
+        radioButton.name = 'choices';
+        radioButton.value = choice;
+        radioButton.id = `choice${index}`;
+
+        const label = document.createElement('label');
+        label.setAttribute('for', `choice${index}`);
+        label.textContent = choice;
+
+        choicesContainer.appendChild(radioButton);
+        choicesContainer.appendChild(label);
+      });
+    }
+
+    function startTimer() {
+      intervalId = setInterval(function() {
+        timer--;
+        document.querySelector('#timer').textContent = `Time Left: ${timer}`;
+        if (timer === 0) {
+          clearInterval(intervalId);
+          alert("Time's up!");
+          displayNextQuestion();
+          startTimer();
+        }
+      }, 1000);
+    }
+
+    document.getElementById("submit").addEventListener("click", function() {
+      const userAnswer = document.querySelector('input[name="choices"]:checked')?.value;
+      const currentQuestion = levels[currentLevel][currentQuestionIndex];
+
+      if (!userAnswer) {
+        alert("Please select an answer.");
+        return;
+      }
+
+      if (userAnswer === currentQuestion.answer) {
+        clearInterval(intervalId);
+        alert("Correct!");
+        score++;
+        totalQuestionsAnswered++;
+        currentQuestionIndex++; // Move to the next question
+        if (currentQuestionIndex < questionsPerLevel) {
+          displayNextQuestion();
+          startTimer();
+        } else {
+          alert(`You've completed Level ${currentLevel + 1}! Your final score is ${score}`);
+          score = 0; // Reset score
+          totalQuestionsAnswered = 0;
+          currentLevel++; // Move to the next level
+          if (currentLevel < levels.length) {
+            displayNextQuestion();
+            startTimer();
+          } else {
+            alert("Congratulations! You've completed all levels!");
+            resetGame(); // Reset the game when all levels are completed
+          }
+        }
+      } else {
+        alert("Incorrect. Try again.");
+        score--; // Deduct points for incorrect answers
+        document.querySelector('#score').textContent = `Score: ${score}`;
+        resetGame(); // Reset the game on incorrect answer
+      }
+    });
+
+    // Function to reset the game
+    function resetGame() {
+      clearInterval(intervalId);
+      score = 0;
+      currentLevel = 0;
+      totalQuestionsAnswered = 0;
+      displayNextQuestion();
+      startTimer();
+    }
+
+    // Start the game
+    displayNextQuestion();
+    startTimer();
+  </script>
+</body>
+
+</html>
